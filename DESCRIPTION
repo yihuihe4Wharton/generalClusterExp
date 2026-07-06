@@ -1,0 +1,24 @@
+Package: generalClusterExp
+Type: Package
+Title: General Cluster Experiment Estimators under Network Interference
+Version: 0.1.0
+Authors@R: person("Yihui", "He", email = "yihuihe@upenn.edu", role = c("aut", "cre"))
+Description: Implements the MRN, IPTW, and CRN linear-weighted Hajek estimators
+    for cluster-randomized experiments with cross-cluster network interference,
+    together with conservative HAC variance estimators. Each top-level function
+    returns the overall, direct, indirect and total causal effects, all
+    well-defined marginal and non-marginal population average potential
+    outcomes, and variance estimates for every quantity. The estimands follow
+    Section 4-5 of the companion manuscript; the variance estimators follow
+    Section 6 (Theorem var_1 Loewner-max kernel under cluster-level Bernoulli
+    randomization, the bias-corrected estimator under complete randomization,
+    and Theorem var_2 / K3+ kernel for the cluster-agnostic CRN estimator).
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports:
+    Matrix,
+    methods,
+    stats
+Suggests:
+    RSpectra
+RoxygenNote: 7.3.2
