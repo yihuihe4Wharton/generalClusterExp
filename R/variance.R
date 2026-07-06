@@ -13,15 +13,32 @@
 #      indirect / total / overall causal effects (contrasts of the estimands).
 ##############################################################
 
-# Hajek LW estimate mu and per-unit centred contribution V for one estimand
-# with per-unit identification weight b and unit weight u.
-#
-# NOTE: following the definition of \hat Sigma^K in Section 6 of main.tex, the
-# contribution is V_i = u_i b_i (Y_i - mu) WITHOUT dividing by the Hajek
-# denominator D = sum_i u_i b_i (which converges to 1; see the estimator
-# definition in Section 7). The point estimate mu itself is the properly
-# normalised Hajek ratio. TODO: if finite-sample D departs noticeably from 1,
-# divide V by D for a sharper variance.
+#' Hajek linear-weighted estimate and contribution column
+#'
+#' Computes the Hajek LW point estimate \eqn{\hat\mu = \sum_i u_i b_i Y_i /
+#' \sum_i u_i b_i} for one estimand and its per-unit centred contribution
+#' column \eqn{V_i = u_i b_i (Y_i - \hat\mu)}.
+#'
+#' NOTE: following the definition of \eqn{\hat\Sigma^K} in Section 6 of
+#' main.tex, the contribution is NOT divided by the Hajek denominator
+#' \eqn{D = \sum_i u_i b_i} (which converges to 1; see the estimator definition
+#' in Section 7). The point estimate itself is the properly normalised Hajek
+#' ratio. TODO: if finite-sample D departs noticeably from 1, divide V by D
+#' for a sharper variance.
+#'
+#' @param b per-unit identification weight column.
+#' @param Y observed outcomes.
+#' @param u per-unit weights.
+#' @return A list with the point estimate \code{mu}, the contribution column
+#'   \code{V}, and a flag \code{ok} (FALSE when the denominator is 0 or
+#'   non-finite).
+#' @keywords internal
+#' @examples
+#' set.seed(1)
+#' Y <- rnorm(10); b <- runif(10); u <- rep(1 / 10, 10)
+#' est <- generalClusterExp:::.lw_estimand(b, Y, u)
+#' est$mu               # Hajek ratio sum(u * b * Y) / sum(u * b)
+#' sum(est$V)           # centred contributions sum to 0
 .lw_estimand <- function(b, Y, u) {
   den <- sum(u * b)
   if (!is.finite(den) || den == 0) {
@@ -31,9 +48,20 @@
   list(mu = mu, V = u * b * (Y - mu), ok = TRUE)
 }
 
-# Canonical list of the six population average potential outcomes.
-# regime: 1 -> phi_1 (weights1), 0 -> phi_0 (weights0).
-# w: NA -> marginal Ybar(phi); 0/1 -> non-marginal Ybar(w, phi).
+#' Canonical potential-outcome specifications
+#'
+#' Canonical list of the six population average potential outcomes
+#' (Section 4-5). Each entry has \code{regime} (1 for phi_1 / weights1, 0 for
+#' phi_0 / weights0), \code{w} (\code{NA} for the marginal
+#' \eqn{\bar Y(\phi)}; 0/1 for the non-marginal \eqn{\bar Y(w, \phi)}) and a
+#' display \code{label}.
+#'
+#' @return A named list of specification lists.
+#' @keywords internal
+#' @examples
+#' specs <- generalClusterExp:::.po_specs()
+#' names(specs)
+#' vapply(specs, function(s) s$label, character(1))
 .po_specs <- function() {
   list(
     Ybar_phi1     = list(regime = 1, w = NA_integer_, label = "Ybar(phi1)"),
@@ -45,11 +73,23 @@
   )
 }
 
-# Causal-effect contrasts over the potential-outcome keys (Section 4-5):
-#   overall   CE^O          = Ybar(phi1)    - Ybar(phi0)
-#   direct    CE^D(phi_c)   = Ybar(1,phi_c) - Ybar(0,phi_c)
-#   indirect  CE^I(w)       = Ybar(w,phi1)  - Ybar(w,phi0)
-#   total     CE^T          = Ybar(1,phi1)  - Ybar(0,phi0)
+#' Causal-effect contrast specifications
+#'
+#' Causal-effect contrasts over the potential-outcome keys (Section 4-5):
+#' \itemize{
+#'   \item overall \eqn{CE^O = \bar Y(\phi_1) - \bar Y(\phi_0)}
+#'   \item direct \eqn{CE^D(\phi_c) = \bar Y(1, \phi_c) - \bar Y(0, \phi_c)}
+#'   \item indirect \eqn{CE^I(w) = \bar Y(w, \phi_1) - \bar Y(w, \phi_0)}
+#'   \item total \eqn{CE^T = \bar Y(1, \phi_1) - \bar Y(0, \phi_0)}
+#' }
+#'
+#' @return A named list; each entry has the potential-outcome keys \code{plus}
+#'   and \code{minus} and a display \code{label}.
+#' @keywords internal
+#' @examples
+#' effs <- generalClusterExp:::.effect_specs()
+#' names(effs)
+#' effs$CE_total
 .effect_specs <- function() {
   list(
     CE_overall      = list(plus = "Ybar_phi1",    minus = "Ybar_phi0",    label = "Overall CE^O(phi1,phi0)"),
@@ -61,9 +101,24 @@
   )
 }
 
-# Decide which potential outcomes are well-defined from the regime own-treatment
-# probabilities. Marginal outcomes are always well-defined; Ybar(w, phi) needs
-# P_phi(W = w) > 0 for every contributing unit.
+#' Well-definedness of a potential outcome
+#'
+#' Decides whether a potential outcome is well-defined from the regime
+#' own-treatment probabilities. Marginal outcomes are always well-defined;
+#' \eqn{\bar Y(w, \phi)} needs \eqn{P_\phi(W = w) > 0} for every contributing
+#' unit.
+#'
+#' @param spec one specification from \code{\link{.po_specs}}.
+#' @param p1_own,p0_own per-unit own-treatment probabilities under phi_1 and
+#'   phi_0 (see \code{\link{.own_treatment_prob1}}).
+#' @return \code{TRUE} or \code{FALSE}.
+#' @keywords internal
+#' @examples
+#' spec <- generalClusterExp:::.po_specs()$Ybar_w1_phi0   # Ybar(1, phi0)
+#' p1 <- rep(0.5, 4)
+#' generalClusterExp:::.is_well_defined(spec, p1, p0_own = rep(0.2, 4))
+#' ## not defined when phi_0 never treats a unit:
+#' generalClusterExp:::.is_well_defined(spec, p1, p0_own = rep(0, 4))
 .is_well_defined <- function(spec, p1_own, p0_own) {
   if (is.na(spec$w)) return(TRUE)
   p_own <- if (spec$regime == 1) p1_own else p0_own
@@ -71,9 +126,29 @@
   all(pw > 0)
 }
 
-# Build the per-unit identification weight column b for one estimand:
-#   marginal:      b_i = wts_i
-#   non-marginal:  b_i = wts_i * 1(W_i = w) / P_phi(W_i = w)     (Theorem all_weights (b))
+#' Per-unit identification weight column for one estimand
+#'
+#' Builds the per-unit identification weight column b for one estimand:
+#' \itemize{
+#'   \item marginal: \eqn{b_i = wts_i}
+#'   \item non-marginal: \eqn{b_i = wts_i \cdot 1(W_i = w) / P_\phi(W_i = w)}
+#'     (Theorem all_weights (b))
+#' }
+#'
+#' @param spec one specification from \code{\link{.po_specs}}.
+#' @param weights1,weights0 per-regime identification weights.
+#' @param W_Y 0/1 vector of individual-level treatments.
+#' @param p1_own,p0_own per-unit own-treatment probabilities under phi_1 and
+#'   phi_0.
+#' @return A numeric weight vector.
+#' @keywords internal
+#' @examples
+#' spec <- generalClusterExp:::.po_specs()$Ybar_w1_phi1   # Ybar(1, phi1)
+#' W_Y <- c(1, 0, 1, 0)
+#' ## = weights1 * 1(W = 1) / P_phi1(W = 1)
+#' generalClusterExp:::.estimand_weight(spec,
+#'   weights1 = rep(1, 4), weights0 = rep(1, 4), W_Y = W_Y,
+#'   p1_own = rep(0.5, 4), p0_own = rep(0.2, 4))
 .estimand_weight <- function(spec, weights1, weights0, W_Y, p1_own, p0_own) {
   wts <- if (spec$regime == 1) weights1 else weights0
   if (is.na(spec$w)) return(wts)
@@ -86,12 +161,38 @@
   b
 }
 
-# Assemble the d x d HAC covariance for the supplied contribution matrix V,
-# following the variance rule for (method, design):
-#   - crn          : Sigma_2 = V^T K3+ V                     (Theorem var_2, any design)
-#   - mrn / iptw,
-#       bernoulli  : Sigma_1 = Sigma^{K_within} \vee Sigma^{K_overlap}   (Theorem var_1)
-#       complete   : Sigma_1 - M_hat                          (bias-corrected, Section 6.3)
+#' Assemble the HAC covariance for a (method, design) pair
+#'
+#' Assembles the d x d HAC covariance for the supplied contribution matrix
+#' \code{V}, following the variance rule for the (method, design) pair:
+#' \itemize{
+#'   \item \code{crn}: \eqn{\hat\Sigma_2 = V^\top K_3^+ V} (Theorem var_2,
+#'     any design);
+#'   \item \code{mrn} / \code{iptw}, Bernoulli: Loewner max of the within- and
+#'     overlap-kernel covariances (Theorem var_1);
+#'   \item \code{mrn} / \code{iptw}, complete: the Bernoulli value minus the
+#'     bias-correction matrix \eqn{\hat M} (Section 6.3).
+#' }
+#'
+#' @param V n_unit x d contribution matrix.
+#' @param A n_unit x n_unit adjacency matrix (with self-loops).
+#' @param C integer vector of cluster ids.
+#' @param W_C 0/1 vector of cluster-level treatments.
+#' @param method \code{"mrn"}, \code{"iptw"} or \code{"crn"}.
+#' @param design \code{"bernoulli"} or \code{"complete"}.
+#' @return A list with the d x d matrix \code{Sigma} and a describing string
+#'   \code{variance_type}.
+#' @keywords internal
+#' @examples
+#' set.seed(1)
+#' A <- Matrix::Matrix(outer(1:12, 1:12, function(i, j) abs(i - j) <= 1) * 1,
+#'                     sparse = TRUE)
+#' C <- rep(1:3, each = 4); W_C <- c(1, 0, 1)
+#' V <- matrix(rnorm(24), 12, 2) / 12   # contributions of two estimands
+#' generalClusterExp:::.assemble_Sigma(V, A, C, W_C,
+#'                                     method = "mrn", design = "bernoulli")
+#' generalClusterExp:::.assemble_Sigma(V, A, C, W_C,
+#'                                     method = "crn", design = "bernoulli")
 .assemble_Sigma <- function(V, A, C, W_C, method, design) {
   if (method == "crn") {
     K3 <- .kernel_K3_plus(A)
@@ -110,7 +211,43 @@
   list(Sigma = Sigma1, variance_type = "var_1 (Loewner-max, Bernoulli)")
 }
 
-# Main engine: weights -> estimands -> Sigma -> tidy output.
+#' Estimation engine: weights to tidy output
+#'
+#' Main engine shared by \code{\link{mrn}}, \code{\link{iptw}} and
+#' \code{\link{crn}}: takes the per-regime identification weights, enumerates
+#' the well-defined potential outcomes, forms the Hajek LW point estimates and
+#' contribution columns, assembles the HAC covariance, and returns the tidy
+#' output lists.
+#'
+#' @param A n_unit x n_unit adjacency matrix (with self-loops).
+#' @param C integer vector of cluster ids.
+#' @param Y numeric vector of observed outcomes.
+#' @param W_C 0/1 vector of cluster-level treatments.
+#' @param W_Y 0/1 vector of individual-level treatments.
+#' @param weights1,weights0 per-regime identification weights (from one of the
+#'   weight constructors).
+#' @param p1_own,p0_own per-unit own-treatment probabilities under phi_1 and
+#'   phi_0.
+#' @param unit_weights optional per-unit weights (default: uniform).
+#' @param method \code{"mrn"}, \code{"iptw"} or \code{"crn"}.
+#' @param design \code{"bernoulli"} or \code{"complete"}.
+#' @return See \code{\link{mrn}}.
+#' @keywords internal
+#' @examples
+#' set.seed(1)
+#' A <- Matrix::Matrix(outer(1:12, 1:12, function(i, j) abs(i - j) <= 1) * 1,
+#'                     sparse = TRUE)
+#' C <- rep(1:3, each = 4); W_C <- c(1, 0, 1)
+#' W_Y <- rbinom(12, 1, ifelse(W_C[C] == 1, 0.5, 0.2))
+#' Y <- rnorm(12, mean = 2 * as.vector(A %*% W_Y))
+#' w <- generalClusterExp:::.iptw_weights(A, C, W_C,
+#'                                        distC = "binom",
+#'                                        paramsC = list(prob = 0.7))
+#' out <- generalClusterExp:::.run_engine(A, C, Y, W_C, W_Y,
+#'   weights1 = w$weights1, weights0 = w$weights0,
+#'   p1_own = rep(0.5, 12), p0_own = rep(0.2, 12),
+#'   unit_weights = NULL, method = "iptw", design = "bernoulli")
+#' out$causal_effects
 .run_engine <- function(A, C, Y, W_C, W_Y,
                         weights1, weights0,
                         p1_own, p0_own,

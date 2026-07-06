@@ -10,6 +10,19 @@
 
 # ---- PSD projection helpers (from our_helper) -------------------------------
 
+#' PSD projection via dense eigendecomposition
+#'
+#' Projects a symmetric kernel matrix onto the positive semi-definite cone by
+#' flooring its eigenvalues at \code{tol} (dense, exact PSD part).
+#'
+#' @param K symmetric kernel matrix (dense or sparse).
+#' @param tol floor applied to the eigenvalues.
+#' @return A dense symmetric PSD matrix.
+#' @keywords internal
+#' @examples
+#' K <- matrix(c(1, 2, 2, 1), 2, 2)    # indefinite: eigenvalues 3 and -1
+#' Kp <- generalClusterExp:::.psd_via_eigen(K)
+#' eigen(Kp, symmetric = TRUE)$values  # all >= 0
 .psd_via_eigen <- function(K, tol = 1e-12) {
   Kd <- as.matrix(K); Kd <- (Kd + t(Kd)) / 2
   eg <- eigen(Kd, symmetric = TRUE)
@@ -18,6 +31,22 @@
   (Kpsd + t(Kpsd)) / 2
 }
 
+#' PSD correction via diagonal shift
+#'
+#' Makes a symmetric sparse kernel PSD by adding \code{(-lambda_min + eps)} to
+#' the diagonal when its smallest eigenvalue \code{lambda_min} is negative.
+#' Keeps the matrix sparse; uses \pkg{RSpectra} for the extreme eigenvalue when
+#' available.
+#'
+#' @param K symmetric kernel matrix (coerced to sparse \code{dgCMatrix}).
+#' @param eps extra diagonal mass added on top of \code{-lambda_min}.
+#' @return A sparse symmetric PSD matrix.
+#' @keywords internal
+#' @examples
+#' ## chain adjacency: indefinite (smallest eigenvalue is negative)
+#' K <- Matrix::Matrix(abs(outer(1:4, 1:4, "-")) == 1, sparse = TRUE) * 1
+#' Ks <- generalClusterExp:::.psd_via_shift(K)
+#' min(eigen(as.matrix(Ks), symmetric = TRUE)$values) >= 0
 .psd_via_shift <- function(K, eps = 1e-12) {
   if (!inherits(K, "dgCMatrix")) {
     K <- methods::as(methods::as(K, "generalMatrix"), "CsparseMatrix")
@@ -33,11 +62,24 @@
   K
 }
 
-# K3+ : PSD part of the unit-level interference kernel
-#   (K_3)_{ij,i'j'} = 1{ N_ij  cap  N_i'j'  != empty },
-# i.e. two units share at least one interference neighbour. Used by the
-# cluster-agnostic CRN estimator (Theorem var_2). `psd_fun` selects the PSD
-# projection: "shift" (default, sparse) or "eigen" (dense, exact PSD part).
+#' Unit-level interference kernel K3+
+#'
+#' PSD part of the unit-level interference kernel
+#' \deqn{(K_3)_{ij,i'j'} = 1\{ N_{ij} \cap N_{i'j'} \neq \emptyset \},}
+#' i.e. two units are dependent when they share at least one interference
+#' neighbour. Used by the cluster-agnostic CRN estimator (Theorem var_2).
+#'
+#' @param A n_unit x n_unit adjacency matrix (with self-loops).
+#' @param psd_fun PSD projection: \code{"shift"} (default, sparse) or
+#'   \code{"eigen"} (dense, exact PSD part).
+#' @return An n_unit x n_unit PSD kernel matrix.
+#' @keywords internal
+#' @examples
+#' ## chain network: each unit interferes with itself and adjacent units
+#' A <- Matrix::Matrix(outer(1:6, 1:6, function(i, j) abs(i - j) <= 1) * 1,
+#'                     sparse = TRUE)
+#' K3 <- generalClusterExp:::.kernel_K3_plus(A)
+#' round(as.matrix(K3), 2)  # overlap indicator (plus a small diagonal shift)
 .kernel_K3_plus <- function(A, psd_fun = "shift") {
   if (!inherits(A, "sparseMatrix")) A <- Matrix::Matrix(A, sparse = TRUE)
   K <- Matrix::tcrossprod(A)              # K_{ii'} = #shared neighbours
@@ -51,11 +93,29 @@
   }
 }
 
-# Cluster kernels for the general (mrn / iptw) estimators (Theorem var_1):
-#   K_within   : 1{ i = i' }                      (same cluster; PSD)
-#   K_overlap  : 1{ N^{cl}_ij  cap  N^{cl}_i'j' != empty }  (overlapping
-#                cluster-level interference neighbourhoods)
-# Returned with the manuscript's naming via $K1 (within) and $K2 (overlap).
+#' Cluster kernels for the general (MRN / IPTW) variance estimator
+#'
+#' Builds the two cluster kernels of Theorem var_1:
+#' \itemize{
+#'   \item \code{K1} (within): \eqn{1\{i = i'\}} at the cluster level, i.e. two
+#'     units are dependent when they belong to the same cluster (PSD);
+#'   \item \code{K2} (overlap): \eqn{1\{ N^{cl}_{ij} \cap N^{cl}_{i'j'} \neq
+#'     \emptyset \}}, i.e. their cluster-level interference neighbourhoods
+#'     overlap.
+#' }
+#'
+#' @param A n_unit x n_unit adjacency matrix (with self-loops).
+#' @param C integer vector of cluster ids.
+#' @return A list with sparse 0/1 kernels \code{K1} (within) and \code{K2}
+#'   (overlap).
+#' @keywords internal
+#' @examples
+#' A <- Matrix::Matrix(outer(1:6, 1:6, function(i, j) abs(i - j) <= 1) * 1,
+#'                     sparse = TRUE)
+#' C <- rep(1:3, each = 2)
+#' ker <- generalClusterExp:::.cluster_kernels(A, C)
+#' as.matrix(ker$K1)  # 1 iff same cluster
+#' as.matrix(ker$K2)  # 1 iff overlapping cluster neighbourhoods
 .cluster_kernels <- function(A, C) {
   if (!inherits(A, "sparseMatrix")) A <- Matrix::Matrix(A, sparse = TRUE)
   n <- length(C)
@@ -82,14 +142,38 @@
 
 # ---- matrix combination operators ------------------------------------------
 
-# HAC covariance estimator Sigma^K = V^T K V (d x d, symmetrised).
+#' HAC covariance from a kernel
+#'
+#' Computes the HAC covariance estimator \eqn{\Sigma^K = V^\top K V} (d x d,
+#' symmetrised) from the n_unit x d contribution matrix \code{V} and a kernel
+#' \code{K}.
+#'
+#' @param V n_unit x d matrix of per-unit, per-estimand contributions.
+#' @param K n_unit x n_unit kernel matrix.
+#' @return A d x d symmetric covariance matrix.
+#' @keywords internal
+#' @examples
+#' set.seed(1)
+#' V <- cbind(rnorm(6), rnorm(6)) / 6  # contributions of two estimands
+#' K <- diag(6)                        # independence kernel
+#' generalClusterExp:::.sigma_from_kernel(V, K)  # equals crossprod(V)
 .sigma_from_kernel <- function(V, K) {
   S <- as.matrix(Matrix::crossprod(V, K %*% V))
   (S + t(S)) / 2
 }
 
-# Loewner maximum  A \vee B = A + (B - A)_+  (matrix generalisation of max()).
-# Guarantees A \vee B  >=  A  and  >=  B in the PSD order.
+#' Loewner maximum of two symmetric matrices
+#'
+#' Computes \eqn{A \vee B = A + (B - A)_+}, the matrix generalisation of
+#' \code{max()}: the result dominates both \code{A} and \code{B} in the PSD
+#' (Loewner) order.
+#'
+#' @param A,B symmetric matrices of equal dimension.
+#' @return A symmetric matrix, the Loewner maximum of \code{A} and \code{B}.
+#' @keywords internal
+#' @examples
+#' A <- diag(c(2, 1)); B <- diag(c(1, 2))
+#' generalClusterExp:::.lowner_max(A, B)  # here simply diag(2, 2)
 .lowner_max <- function(A, B) {
   A <- (A + t(A)) / 2; B <- (B + t(B)) / 2
   D <- B - A
@@ -98,15 +182,34 @@
   A + (Dp + t(Dp)) / 2
 }
 
-# Bias-correction matrix \hat M under cluster-level complete randomization
-# (Section 6.3, bias-corrected estimator):
-#   M_hat   = sum_{k: p_k in (p_overlap, 1-p_overlap)} s_hat_k s_hat_k^T / (|I_k| p_k (1-p_k)),
-#   s_hat_k = sum_{(i,j)} (T_ij,k - m_ij,k p_k) * V_ij,
-# with T_ij,k = #treated clusters of stratum k in N^{cl}_ij,
-#      m_ij,k = #clusters of stratum k in N^{cl}_ij,
-#      p_k    = (#treated clusters in stratum k) / |I_k|.
-# V is the n_unit x d contribution matrix, so s_hat_k and M are d-vectors /
-# d x d matrices. `strata` is a list of cluster-id vectors; NULL = one stratum.
+#' Bias-correction matrix under complete randomization
+#'
+#' Bias-correction matrix \eqn{\hat M} under cluster-level (stratified)
+#' complete randomization (Section 6.3, bias-corrected estimator):
+#' \deqn{\hat M = \sum_{k : p_k \in (p_{overlap}, 1 - p_{overlap})}
+#'       \hat s_k \hat s_k^\top / (|I_k| p_k (1 - p_k)),}
+#' \deqn{\hat s_k = \sum_{(i,j)} (T_{ij,k} - m_{ij,k} p_k) V_{ij},}
+#' with \eqn{T_{ij,k}} the number of treated clusters of stratum k in
+#' \eqn{N^{cl}_{ij}}, \eqn{m_{ij,k}} the number of clusters of stratum k in
+#' \eqn{N^{cl}_{ij}}, and \eqn{p_k} the realised treated fraction of stratum k.
+#'
+#' @param A n_unit x n_unit adjacency matrix (with self-loops).
+#' @param C integer vector of cluster ids.
+#' @param W_C 0/1 vector of cluster-level treatments, indexed by cluster id.
+#' @param V n_unit x d contribution matrix.
+#' @param strata list of cluster-id vectors; \code{NULL} means one stratum.
+#' @param p_overlap strata with \eqn{p_k} outside
+#'   \eqn{(p_{overlap}, 1 - p_{overlap})} are skipped.
+#' @return A d x d PSD correction matrix.
+#' @keywords internal
+#' @examples
+#' set.seed(1)
+#' A <- Matrix::Matrix(outer(1:12, 1:12, function(i, j) abs(i - j) <= 1) * 1,
+#'                     sparse = TRUE)
+#' C <- rep(1:4, each = 3)
+#' W_C <- c(1, 0, 1, 0)  # exactly 2 of 4 clusters treated
+#' V <- matrix(rnorm(12 * 2), 12, 2) / 12
+#' generalClusterExp:::.bias_correction_matrix(A, C, W_C, V)
 .bias_correction_matrix <- function(A, C, W_C, V, strata = NULL, p_overlap = 0) {
   if (!inherits(A, "sparseMatrix")) A <- Matrix::Matrix(A, sparse = TRUE)
   N <- length(C); d <- ncol(V)

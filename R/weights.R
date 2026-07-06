@@ -12,8 +12,33 @@
 # identification matrix B_marg in Section 7 of main.tex.
 ##############################################################
 
-# Probability of `treated_neighbors` treated out of `total_neighbors_in_cluster`
-# draws, under the within-cluster (or cluster-level) assignment law.
+#' Within-cluster / cluster-level assignment probability
+#'
+#' Probability of \code{treated_neighbors} treated out of
+#' \code{total_neighbors_in_cluster} draws, under the within-cluster (or
+#' cluster-level) assignment law \code{dist} with parameters \code{params}.
+#'
+#' @param dist \code{"binom"} or \code{"hypergeom"}.
+#' @param params for \code{"binom"}, \code{list(prob = p)}; for
+#'   \code{"hypergeom"}, \code{list(m = m)} where \code{m} may be a scalar or a
+#'   per-cluster vector.
+#' @param treated_neighbors number of treated draws (vectorised).
+#' @param total_neighbors_in_cluster number of draws.
+#' @param total_size population size of the cluster (or the number of clusters
+#'   for a cluster-level law).
+#' @param cluster_id optional cluster id used to pick the entry of a
+#'   per-cluster \code{params$m}.
+#' @return A numeric vector of probabilities.
+#' @keywords internal
+#' @examples
+#' ## Binomial law: P(2 of 3 neighbours treated) with p = 0.5
+#' generalClusterExp:::.calc_treatment_probability(
+#'   "binom", list(prob = 0.5), 2, 3, total_size = 10)
+#'
+#' ## Hypergeometric law: 2 treated among 3 draws from a cluster of
+#' ## size 10 containing m = 5 treated units
+#' generalClusterExp:::.calc_treatment_probability(
+#'   "hypergeom", list(m = 5), 2, 3, total_size = 10)
 .calc_treatment_probability <- function(dist, params,
                                         treated_neighbors,
                                         total_neighbors_in_cluster,
@@ -40,9 +65,36 @@
   }
 }
 
-# Marginal Radon-Nikodym (MRN) weights (Theorem all_weights / Prop. weights (i)).
-# Ported verbatim from our_helper::marg_Radon_weights; only the auxiliary
-# bookkeeping needed for the leave-cluster-out jackknife is dropped.
+#' Marginal Radon--Nikodym (MRN) identification weights
+#'
+#' Per-unit marginal Radon--Nikodym weights \eqn{\alpha_{ij}(\phi_c)} (Theorem
+#' all_weights / Prop. weights (i)) for the two counterfactual regimes.
+#' Ported verbatim from \code{our_helper::marg_Radon_weights}; only the
+#' auxiliary bookkeeping needed for the leave-cluster-out jackknife is dropped.
+#'
+#' @param A n_unit x n_unit adjacency matrix (with self-loops).
+#' @param C integer vector of cluster ids.
+#' @param W_C 0/1 vector of cluster-level treatments, indexed by cluster id.
+#' @param W_Y 0/1 vector of individual-level treatments.
+#' @param dist1,params1 within-cluster assignment law of the treated regime phi_1.
+#' @param dist0,params0 within-cluster assignment law of the control regime phi_0.
+#' @param distC,paramsC cluster-level assignment law.
+#' @param unit_weights optional per-unit weights (default: uniform); only units
+#'   with nonzero weight are processed.
+#' @return A list with numeric vectors \code{weights1} and \code{weights0}.
+#' @keywords internal
+#' @examples
+#' set.seed(1)
+#' A <- Matrix::Matrix(outer(1:12, 1:12, function(i, j) abs(i - j) <= 1) * 1,
+#'                     sparse = TRUE)
+#' C <- rep(1:3, each = 4)
+#' W_C <- c(1, 0, 1)
+#' W_Y <- rbinom(12, 1, ifelse(W_C[C] == 1, 0.5, 0.2))
+#' w <- generalClusterExp:::.marg_rn_weights(A, C, W_C, W_Y,
+#'   dist1 = "binom", params1 = list(prob = 0.5),
+#'   dist0 = "binom", params0 = list(prob = 0.2),
+#'   distC = "binom", paramsC = list(prob = 0.7))
+#' cbind(phi1 = w$weights1, phi0 = w$weights0)
 .marg_rn_weights <- function(A, C, W_C, W_Y,
                              dist1 = "binom", params1 = list(prob = 0.5),
                              dist0 = "binom", params0 = list(prob = 0),
@@ -120,8 +172,26 @@
   list(weights1 = weights1, weights0 = weights0)
 }
 
-# Complete / joint Radon-Nikodym (CRN) weights (Prop. weights (ii)).
-# Ported from our_helper::Radon_weights (cluster-agnostic weights).
+#' Complete / joint Radon--Nikodym (CRN) identification weights
+#'
+#' Per-unit complete (joint) Radon--Nikodym weights \eqn{\alpha_{ij}^{comp}}
+#' (Prop. weights (ii)); cluster-agnostic. Ported from
+#' \code{our_helper::Radon_weights}.
+#'
+#' @inheritParams .marg_rn_weights
+#' @return A list with numeric vectors \code{weights1} and \code{weights0}.
+#' @keywords internal
+#' @examples
+#' set.seed(1)
+#' A <- Matrix::Matrix(outer(1:12, 1:12, function(i, j) abs(i - j) <= 1) * 1,
+#'                     sparse = TRUE)
+#' C <- rep(1:3, each = 4)
+#' W_C <- c(1, 0, 1)
+#' W_Y <- rbinom(12, 1, ifelse(W_C[C] == 1, 0.5, 0.2))
+#' w <- generalClusterExp:::.complete_rn_weights(A, C, W_C, W_Y,
+#'   dist1 = "binom", params1 = list(prob = 0.5),
+#'   dist0 = "binom", params0 = list(prob = 0.2))
+#' cbind(phi1 = w$weights1, phi0 = w$weights0)
 .complete_rn_weights <- function(A, C, W_C, W_Y,
                                  dist1 = "binom", params1 = list(prob = 0.5),
                                  dist0 = "binom", params0 = list(prob = 0),
@@ -166,11 +236,29 @@
   list(weights1 = weights1, weights0 = weights0)
 }
 
-# IPTW weights (Leung 2025; Prop. weights (iv)):
-#   beta_ij(phi_1) = 1{C_{N_ij} = 1} / P(C_{N_ij} = 1),
-#   beta_ij(phi_0) = 1{C_{N_ij} = 0} / P(C_{N_ij} = 0),
-# where the probabilities use the cluster-level assignment law (distC, paramsC)
-# over the k = |N^{cl}_ij| distinct neighbouring clusters.
+#' IPTW identification weights
+#'
+#' Cluster-level inverse-probability weights (Leung 2025; Prop. weights (iv)):
+#' \deqn{\beta_{ij}(\phi_1) = 1\{C_{N_{ij}} = 1\} / P(C_{N_{ij}} = 1), \quad
+#'       \beta_{ij}(\phi_0) = 1\{C_{N_{ij}} = 0\} / P(C_{N_{ij}} = 0),}
+#' where the probabilities use the cluster-level assignment law
+#' (\code{distC}, \code{paramsC}) over the \eqn{k = |N^{cl}_{ij}|} distinct
+#' neighbouring clusters. Units whose neighbouring clusters are not all
+#' treated (for phi_1) or all control (for phi_0) get weight 0.
+#'
+#' @inheritParams .marg_rn_weights
+#' @return A list with numeric vectors \code{weights1} and \code{weights0}.
+#' @keywords internal
+#' @examples
+#' A <- Matrix::Matrix(outer(1:12, 1:12, function(i, j) abs(i - j) <= 1) * 1,
+#'                     sparse = TRUE)
+#' C <- rep(1:3, each = 4)
+#' W_C <- c(1, 0, 1)
+#' w <- generalClusterExp:::.iptw_weights(A, C, W_C,
+#'                                        distC = "binom",
+#'                                        paramsC = list(prob = 0.7))
+#' ## nonzero only where the cluster neighbourhood is all-treated / all-control
+#' cbind(phi1 = w$weights1, phi0 = w$weights0)
 .iptw_weights <- function(A, C, W_C, distC = "binom", paramsC = list(prob = 0.7)) {
   if (!inherits(A, "sparseMatrix")) A <- Matrix::Matrix(A, sparse = TRUE)
   n <- nrow(A)
@@ -195,10 +283,23 @@
   list(weights1 = weights1, weights0 = weights0)
 }
 
-# Per-unit marginal probability of own treatment P_{phi}(W_ij = 1) under the
-# within-cluster regime phi = (dist, params). Used both to form the conditional
-# (non-marginal) weights and to decide which non-marginal estimands are
-# well-defined.
+#' Per-unit own-treatment probability under a within-cluster regime
+#'
+#' Marginal probability \eqn{P_{\phi}(W_{ij} = 1)} of a unit's own treatment
+#' under the within-cluster regime \eqn{\phi} = (\code{dist}, \code{params}).
+#' Used both to form the conditional (non-marginal) weights and to decide
+#' which non-marginal estimands are well-defined.
+#'
+#' @param dist \code{"binom"} or \code{"hypergeom"}.
+#' @param params law parameters; see \code{\link{.calc_treatment_probability}}.
+#' @param C integer vector of cluster ids.
+#' @return A numeric vector of length \code{length(C)}.
+#' @keywords internal
+#' @examples
+#' C <- rep(1:3, each = 4)
+#' generalClusterExp:::.own_treatment_prob1("binom", list(prob = 0.5), C)
+#' ## hypergeometric: m = 2 treated in each cluster of size 4 -> 1/2 each
+#' generalClusterExp:::.own_treatment_prob1("hypergeom", list(m = 2), C)
 .own_treatment_prob1 <- function(dist, params, C) {
   N <- length(C)
   if (dist == "binom") {

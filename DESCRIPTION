@@ -14,6 +14,8 @@ Description: Implements the MRN, IPTW, and CRN linear-weighted Hajek estimators
     randomization, the bias-corrected estimator under complete randomization,
     and Theorem var_2 / K3+ kernel for the cluster-agnostic CRN estimator).
 License: MIT + file LICENSE
+URL: https://yihuihe4wharton.github.io/generalClusterExp/, https://github.com/yihuihe4Wharton/generalClusterExp
+BugReports: https://github.com/yihuihe4Wharton/generalClusterExp/issues
 Encoding: UTF-8
 Imports:
     Matrix,

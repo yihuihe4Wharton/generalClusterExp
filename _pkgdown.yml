@@ -1,0 +1,49 @@
+url: https://yihuihe4wharton.github.io/generalClusterExp/
+
+template:
+  bootstrap: 5
+
+reference:
+- title: Estimators
+  desc: >
+    Top-level MRN, IPTW and CRN linear-weighted Hajek estimators. All three
+    share the same interface and return the overall, direct, indirect and
+    total causal effects, all well-defined marginal and non-marginal
+    population average potential outcomes, and variance estimates for every
+    quantity.
+  contents:
+  - mrn
+  - iptw
+  - crn
+
+- title: Identification weights (internal)
+  desc: Per-unit identification weight constructors and assignment-law helpers.
+  contents:
+  - ".calc_treatment_probability"
+  - ".marg_rn_weights"
+  - ".complete_rn_weights"
+  - ".iptw_weights"
+  - ".own_treatment_prob1"
+
+- title: HAC variance kernels and matrix operations (internal)
+  desc: Dependency kernels, PSD projections and covariance assembly.
+  contents:
+  - ".kernel_K3_plus"
+  - ".cluster_kernels"
+  - ".sigma_from_kernel"
+  - ".lowner_max"
+  - ".bias_correction_matrix"
+  - ".psd_via_eigen"
+  - ".psd_via_shift"
+
+- title: Estimand assembly and engine (internal)
+  desc: Estimand enumeration, Hajek estimates and the shared estimation engine.
+  contents:
+  - ".po_specs"
+  - ".effect_specs"
+  - ".is_well_defined"
+  - ".estimand_weight"
+  - ".lw_estimand"
+  - ".assemble_Sigma"
+  - ".run_engine"
+  - ".infer_design"

@@ -8,9 +8,23 @@
 # variance rule, matching the MRN / IPTW / CRN estimators of Section 7.
 ##############################################################
 
-# Infer the cluster-level assignment design from the cluster-level law:
-#   binom     -> cluster-level independent Bernoulli randomization
-#   hypergeom -> cluster-level (stratified) complete randomization
+#' Infer the cluster-level assignment design
+#'
+#' Infers the cluster-level assignment design from the cluster-level law:
+#' \code{"binom"} maps to cluster-level independent Bernoulli randomization,
+#' \code{"hypergeom"} to cluster-level (stratified) complete randomization.
+#' An explicit \code{design} argument overrides the inference.
+#'
+#' @param distC cluster-level assignment law, \code{"binom"} or
+#'   \code{"hypergeom"}.
+#' @param design optional override, \code{"bernoulli"} or \code{"complete"};
+#'   \code{NULL} to infer from \code{distC}.
+#' @return \code{"bernoulli"} or \code{"complete"}.
+#' @keywords internal
+#' @examples
+#' generalClusterExp:::.infer_design("binom", NULL)       # "bernoulli"
+#' generalClusterExp:::.infer_design("hypergeom", NULL)   # "complete"
+#' generalClusterExp:::.infer_design("binom", "complete") # explicit override
 .infer_design <- function(distC, design) {
   if (!is.null(design)) {
     design <- match.arg(design, c("bernoulli", "complete"))
