@@ -41,9 +41,10 @@ A list with numeric vectors \code{weights1} and \code{weights0}.
 }
 \description{
 Per-unit marginal Radon--Nikodym weights \eqn{\alpha_{ij}(\phi_c)} (Theorem
-all_weights / Prop. weights (i)) for the two counterfactual regimes.
-Ported verbatim from \code{our_helper::marg_Radon_weights}; only the
-auxiliary bookkeeping needed for the leave-cluster-out jackknife is dropped.
+all_weights / Prop. weights (i)) for the two counterfactual regimes. The
+weights marginalise over the within-cluster assignment of each neighbouring
+cluster, so a unit contributes whenever its cluster neighbourhood has
+positive probability under both regimes.
 }
 \examples{
 set.seed(1)

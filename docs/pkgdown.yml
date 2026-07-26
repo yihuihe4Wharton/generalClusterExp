@@ -2,7 +2,7 @@ pandoc: 3.6.2
 pkgdown: 2.1.3
 pkgdown_sha: ~
 articles: {}
-last_built: 2026-07-06T14:01Z
+last_built: 2026-07-26T15:26Z
 urls:
   reference: https://yihuihe4wharton.github.io/generalClusterExp/reference
   article: https://yihuihe4wharton.github.io/generalClusterExp/articles

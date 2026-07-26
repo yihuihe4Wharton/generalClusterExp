@@ -84,6 +84,3 @@ See `?mrn`, `?iptw` and `?crn` for full documentation and further examples.
   and cross-cluster HAC kernels), the bias-corrected estimator under complete
   randomization (Section 6.3), and Theorem `var_2` (`K3+` kernel) for the
   cluster-agnostic CRN estimator.
-
-Spots that need confirmation against the manuscript are flagged with `TODO`
-comments in the source (`R/weights.R`, `R/variance.R`).

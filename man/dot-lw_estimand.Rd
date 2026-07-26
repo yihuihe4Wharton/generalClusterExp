@@ -24,12 +24,12 @@ Computes the Hajek LW point estimate \eqn{\hat\mu = \sum_i u_i b_i Y_i /
 column \eqn{V_i = u_i b_i (Y_i - \hat\mu)}.
 }
 \details{
-NOTE: following the definition of \eqn{\hat\Sigma^K} in Section 6 of
-main.tex, the contribution is NOT divided by the Hajek denominator
-\eqn{D = \sum_i u_i b_i} (which converges to 1; see the estimator definition
-in Section 7). The point estimate itself is the properly normalised Hajek
-ratio. TODO: if finite-sample D departs noticeably from 1, divide V by D
-for a sharper variance.
+NOTE: following the definition of \eqn{\hat\Sigma^K} in Section 6 of the
+companion manuscript, the contribution is NOT divided by the Hajek
+denominator \eqn{D = \sum_i u_i b_i} (which converges to 1; see the
+estimator definition in Section 7). The point estimate itself is the
+properly normalised Hajek ratio. If the finite-sample denominator D departs
+noticeably from 1, dividing V by D yields a sharper variance.
 }
 \examples{
 set.seed(1)

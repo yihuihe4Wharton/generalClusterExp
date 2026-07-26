@@ -4,7 +4,7 @@
 # Given the per-regime identification weights (weights1, weights0) produced by
 # one of the weight constructors, this module
 #   1. enumerates the well-defined population average potential outcomes
-#      (marginal and non-marginal), Section 4-5 of main.tex;
+#      (marginal and non-marginal), Section 4-5 of the companion manuscript;
 #   2. forms each Hajek LW point estimate and its per-unit contribution column
 #      \hat V_ij = u_i * b_ij * (Y_ij - \hat mu);
 #   3. assembles the d x d HAC covariance \hat Sigma over all estimands using
@@ -19,12 +19,12 @@
 #' \sum_i u_i b_i} for one estimand and its per-unit centred contribution
 #' column \eqn{V_i = u_i b_i (Y_i - \hat\mu)}.
 #'
-#' NOTE: following the definition of \eqn{\hat\Sigma^K} in Section 6 of
-#' main.tex, the contribution is NOT divided by the Hajek denominator
-#' \eqn{D = \sum_i u_i b_i} (which converges to 1; see the estimator definition
-#' in Section 7). The point estimate itself is the properly normalised Hajek
-#' ratio. TODO: if finite-sample D departs noticeably from 1, divide V by D
-#' for a sharper variance.
+#' NOTE: following the definition of \eqn{\hat\Sigma^K} in Section 6 of the
+#' companion manuscript, the contribution is NOT divided by the Hajek
+#' denominator \eqn{D = \sum_i u_i b_i} (which converges to 1; see the
+#' estimator definition in Section 7). The point estimate itself is the
+#' properly normalised Hajek ratio. If the finite-sample denominator D departs
+#' noticeably from 1, dividing V by D yields a sharper variance.
 #'
 #' @param b per-unit identification weight column.
 #' @param Y observed outcomes.

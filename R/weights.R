@@ -9,7 +9,7 @@
 #
 # weights1[i] estimates the contribution of unit i to Ybar(phi_1);
 # weights0[i] the contribution to Ybar(phi_0). These are the columns of the
-# identification matrix B_marg in Section 7 of main.tex.
+# identification matrix B_marg in Section 7 of the companion manuscript.
 ##############################################################
 
 #' Within-cluster / cluster-level assignment probability
@@ -68,9 +68,10 @@
 #' Marginal Radon--Nikodym (MRN) identification weights
 #'
 #' Per-unit marginal Radon--Nikodym weights \eqn{\alpha_{ij}(\phi_c)} (Theorem
-#' all_weights / Prop. weights (i)) for the two counterfactual regimes.
-#' Ported verbatim from \code{our_helper::marg_Radon_weights}; only the
-#' auxiliary bookkeeping needed for the leave-cluster-out jackknife is dropped.
+#' all_weights / Prop. weights (i)) for the two counterfactual regimes. The
+#' weights marginalise over the within-cluster assignment of each neighbouring
+#' cluster, so a unit contributes whenever its cluster neighbourhood has
+#' positive probability under both regimes.
 #'
 #' @param A n_unit x n_unit adjacency matrix (with self-loops).
 #' @param C integer vector of cluster ids.
@@ -175,8 +176,9 @@
 #' Complete / joint Radon--Nikodym (CRN) identification weights
 #'
 #' Per-unit complete (joint) Radon--Nikodym weights \eqn{\alpha_{ij}^{comp}}
-#' (Prop. weights (ii)); cluster-agnostic. Ported from
-#' \code{our_helper::Radon_weights}.
+#' (Prop. weights (ii)); cluster-agnostic. Unlike the marginal weights, these
+#' condition on the realised cluster-level assignment, taking the product of
+#' the per-cluster likelihood ratios over the neighbouring clusters.
 #'
 #' @inheritParams .marg_rn_weights
 #' @return A list with numeric vectors \code{weights1} and \code{weights0}.
@@ -305,9 +307,8 @@
   if (dist == "binom") {
     rep(params$prob, N)
   } else if (dist == "hypergeom") {
-    # TODO: confirm against Assumption (treatment mechanism), Section 4 of
-    # main.tex. For a within-cluster hypergeometric law with m treated out of
-    # the cluster size, the own-treatment marginal is m / cluster_size.
+    # Under a within-cluster hypergeometric design with m treated out of
+    # cluster_size, the own-treatment marginal probability is m / cluster_size.
     sizes <- tabulate(C)
     cs <- sizes[C]
     m <- params$m

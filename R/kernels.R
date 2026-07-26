@@ -1,5 +1,6 @@
 ##############################################################
-# HAC variance kernels and matrix operations (Section 6 of main.tex).
+# HAC variance kernels and matrix operations (Section 6 of the companion
+# manuscript).
 #
 # A kernel K is an n_unit x n_unit symmetric 0/1 (or PSD-projected) matrix that
 # selects which pairs of units are treated as dependent. Given the n_unit x d
@@ -8,7 +9,7 @@
 #       Sigma^K = V^T K V        (d x d).
 ##############################################################
 
-# ---- PSD projection helpers (from our_helper) -------------------------------
+# ---- PSD projection helpers -------------------------------------------------
 
 #' PSD projection via dense eigendecomposition
 #'
