@@ -37,9 +37,10 @@ A list with numeric vectors \code{weights1} and \code{weights0}.
 }
 \description{
 Per-unit complete (joint) Radon--Nikodym weights \eqn{\alpha_{ij}^{comp}}
-(Prop. weights (ii)); cluster-agnostic. Unlike the marginal weights, these
-condition on the realised cluster-level assignment, taking the product of
-the per-cluster likelihood ratios over the neighbouring clusters.
+(Theorem 3.7, Proposition 3.9(ii)); cluster-agnostic. Unlike the marginal
+weights, these condition on the realised cluster-level assignment, taking
+the product of the per-cluster likelihood ratios over the neighbouring
+clusters.
 }
 \examples{
 set.seed(1)

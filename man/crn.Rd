@@ -49,11 +49,14 @@ See \code{\link{mrn}}.
 }
 \description{
 Cluster-agnostic linear-weighted Hajek estimator using the complete (joint)
-Radon--Nikodym identification weights (Proposition examples_of_weights (ii)).
+Radon--Nikodym identification weights (Theorem 3.7, Proposition 3.9(ii)).
 Same outputs as \code{\link{mrn}}. The variance estimator is the
-cluster-agnostic HAC estimator \eqn{\hat\Sigma_2} based on the PSD kernel
-\eqn{K_3^+} (Theorem var_2), used under both Bernoulli and complete
-randomization.
+cluster-agnostic HAC estimator \eqn{\hat\Sigma_2} built from the PSD part
+\eqn{K_3^+} of the interference kernel, and is used for every value of
+\code{design}. Its conservativeness is established in Theorem 5.9 under
+independent Bernoulli randomization; the companion manuscript does not
+cover \eqn{\hat\Sigma_2} under complete randomization, so treat the
+variance as heuristic in that case.
 }
 \examples{
 ## Same data-generating pipeline as in the mrn() example: geometric
@@ -71,7 +74,7 @@ Y <- as.vector(-1 + A \%*\% (2 * W_Y) +
                  W_Y * as.vector(A \%*\% (1 * W_Y)) + rnorm(n))
 
 ## CRN is cluster-agnostic: its variance uses the PSD-projected
-## interference kernel K3+ (Theorem var_2) under any design.
+## interference kernel K3+ (Sigma2, Theorem 5.9).
 fit <- crn(A, C, Y, W_C, W_Y,
            params1 = list(prob = 0.5), params0 = list(prob = 0.2),
            distC = "binom", paramsC = list(prob = 0.7))

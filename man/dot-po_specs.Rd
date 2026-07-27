@@ -11,7 +11,7 @@ A named list of specification lists.
 }
 \description{
 Canonical list of the six population average potential outcomes
-(Section 4-5). Each entry has \code{regime} (1 for phi_1 / weights1, 0 for
+(Section 3). Each entry has \code{regime} (1 for phi_1 / weights1, 0 for
 phi_0 / weights0), \code{w} (\code{NA} for the marginal
 \eqn{\bar Y(\phi)}; 0/1 for the non-marginal \eqn{\bar Y(w, \phi)}) and a
 display \code{label}.

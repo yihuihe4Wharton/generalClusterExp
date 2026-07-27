@@ -19,7 +19,8 @@
 A list with numeric vectors \code{weights1} and \code{weights0}.
 }
 \description{
-Cluster-level inverse-probability weights (Leung 2025; Prop. weights (iv)):
+Cluster-level inverse-probability weights (Leung 2025;
+Proposition 3.9(iv)):
 \deqn{\beta_{ij}(\phi_1) = 1\{C_{N_{ij}} = 1\} / P(C_{N_{ij}} = 1), \quad
       \beta_{ij}(\phi_0) = 1\{C_{N_{ij}} = 0\} / P(C_{N_{ij}} = 0),}
 where the probabilities use the cluster-level assignment law

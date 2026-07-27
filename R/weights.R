@@ -3,13 +3,13 @@
 #
 # Each constructor returns a list(weights1, weights0) of per-unit
 # identification weights for the two counterfactual regimes phi_1 and phi_0:
-#   - mrn : marginal Radon-Nikodym weights alpha_ij(phi_c)          (Prop. weights (i))
-#   - crn : complete (joint) Radon-Nikodym weights alpha_ij^comp    (Prop. weights (ii))
-#   - iptw: cluster-level inverse-probability weights               (Prop. weights (iv))
+#   - mrn : marginal Radon-Nikodym weights alpha_ij(phi_c)          (Prop. 3.9(i))
+#   - crn : complete (joint) Radon-Nikodym weights alpha_ij^comp    (Prop. 3.9(ii))
+#   - iptw: cluster-level inverse-probability weights               (Prop. 3.9(iv))
 #
 # weights1[i] estimates the contribution of unit i to Ybar(phi_1);
 # weights0[i] the contribution to Ybar(phi_0). These are the columns of the
-# identification matrix B_marg in Section 7 of the companion manuscript.
+# identification matrix B_marg in Section 4 of the companion manuscript.
 ##############################################################
 
 #' Within-cluster / cluster-level assignment probability
@@ -67,8 +67,8 @@
 
 #' Marginal Radon--Nikodym (MRN) identification weights
 #'
-#' Per-unit marginal Radon--Nikodym weights \eqn{\alpha_{ij}(\phi_c)} (Theorem
-#' all_weights / Prop. weights (i)) for the two counterfactual regimes. The
+#' Per-unit marginal Radon--Nikodym weights \eqn{\alpha_{ij}(\phi_c)}
+#' (Theorem 3.6, Proposition 3.9(i)) for the two counterfactual regimes. The
 #' weights marginalise over the within-cluster assignment of each neighbouring
 #' cluster, so a unit contributes whenever its cluster neighbourhood has
 #' positive probability under both regimes.
@@ -176,9 +176,10 @@
 #' Complete / joint Radon--Nikodym (CRN) identification weights
 #'
 #' Per-unit complete (joint) Radon--Nikodym weights \eqn{\alpha_{ij}^{comp}}
-#' (Prop. weights (ii)); cluster-agnostic. Unlike the marginal weights, these
-#' condition on the realised cluster-level assignment, taking the product of
-#' the per-cluster likelihood ratios over the neighbouring clusters.
+#' (Theorem 3.7, Proposition 3.9(ii)); cluster-agnostic. Unlike the marginal
+#' weights, these condition on the realised cluster-level assignment, taking
+#' the product of the per-cluster likelihood ratios over the neighbouring
+#' clusters.
 #'
 #' @inheritParams .marg_rn_weights
 #' @return A list with numeric vectors \code{weights1} and \code{weights0}.
@@ -240,7 +241,8 @@
 
 #' IPTW identification weights
 #'
-#' Cluster-level inverse-probability weights (Leung 2025; Prop. weights (iv)):
+#' Cluster-level inverse-probability weights (Leung 2025;
+#' Proposition 3.9(iv)):
 #' \deqn{\beta_{ij}(\phi_1) = 1\{C_{N_{ij}} = 1\} / P(C_{N_{ij}} = 1), \quad
 #'       \beta_{ij}(\phi_0) = 1\{C_{N_{ij}} = 0\} / P(C_{N_{ij}} = 0),}
 #' where the probabilities use the cluster-level assignment law

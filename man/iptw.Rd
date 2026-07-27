@@ -49,9 +49,10 @@ See \code{\link{mrn}}.
 }
 \description{
 Linear-weighted Hajek estimator using the cluster-level IPTW identification
-weights of Leung (2025) (Proposition examples_of_weights (iv)). Same outputs
-and variance rule as \code{\link{mrn}} (Theorem var_1 under Bernoulli
-randomization; bias-corrected estimator under complete randomization).
+weights of Leung (2025) (Proposition 3.9(iv)). Same outputs and variance
+rule as \code{\link{mrn}}: \eqn{\hat\Sigma_1} (Theorem 5.4) under Bernoulli
+randomization and the bias-corrected \eqn{\hat\Sigma_3} (Theorem 5.11(ii))
+under complete randomization.
 }
 \examples{
 ## Same data-generating pipeline as in the mrn() example: geometric

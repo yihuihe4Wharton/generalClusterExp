@@ -4,7 +4,7 @@
 # Given the per-regime identification weights (weights1, weights0) produced by
 # one of the weight constructors, this module
 #   1. enumerates the well-defined population average potential outcomes
-#      (marginal and non-marginal), Section 4-5 of the companion manuscript;
+#      (marginal and non-marginal), Section 3 of the companion manuscript;
 #   2. forms each Hajek LW point estimate and its per-unit contribution column
 #      \hat V_ij = u_i * b_ij * (Y_ij - \hat mu);
 #   3. assembles the d x d HAC covariance \hat Sigma over all estimands using
@@ -19,10 +19,10 @@
 #' \sum_i u_i b_i} for one estimand and its per-unit centred contribution
 #' column \eqn{V_i = u_i b_i (Y_i - \hat\mu)}.
 #'
-#' NOTE: following the definition of \eqn{\hat\Sigma^K} in Section 6 of the
+#' NOTE: following the definition of \eqn{\hat\Sigma^K} in Section 5 of the
 #' companion manuscript, the contribution is NOT divided by the Hajek
 #' denominator \eqn{D = \sum_i u_i b_i} (which converges to 1; see the
-#' estimator definition in Section 7). The point estimate itself is the
+#' estimator definition in Section 4). The point estimate itself is the
 #' properly normalised Hajek ratio. If the finite-sample denominator D departs
 #' noticeably from 1, dividing V by D yields a sharper variance.
 #'
@@ -51,7 +51,7 @@
 #' Canonical potential-outcome specifications
 #'
 #' Canonical list of the six population average potential outcomes
-#' (Section 4-5). Each entry has \code{regime} (1 for phi_1 / weights1, 0 for
+#' (Section 3). Each entry has \code{regime} (1 for phi_1 / weights1, 0 for
 #' phi_0 / weights0), \code{w} (\code{NA} for the marginal
 #' \eqn{\bar Y(\phi)}; 0/1 for the non-marginal \eqn{\bar Y(w, \phi)}) and a
 #' display \code{label}.
@@ -75,7 +75,7 @@
 
 #' Causal-effect contrast specifications
 #'
-#' Causal-effect contrasts over the potential-outcome keys (Section 4-5):
+#' Causal-effect contrasts over the potential-outcome keys (Section 3):
 #' \itemize{
 #'   \item overall \eqn{CE^O = \bar Y(\phi_1) - \bar Y(\phi_0)}
 #'   \item direct \eqn{CE^D(\phi_c) = \bar Y(1, \phi_c) - \bar Y(0, \phi_c)}
@@ -132,7 +132,7 @@
 #' \itemize{
 #'   \item marginal: \eqn{b_i = wts_i}
 #'   \item non-marginal: \eqn{b_i = wts_i \cdot 1(W_i = w) / P_\phi(W_i = w)}
-#'     (Theorem all_weights (b))
+#'     (Theorem 3.6(b))
 #' }
 #'
 #' @param spec one specification from \code{\link{.po_specs}}.
@@ -166,12 +166,12 @@
 #' Assembles the d x d HAC covariance for the supplied contribution matrix
 #' \code{V}, following the variance rule for the (method, design) pair:
 #' \itemize{
-#'   \item \code{crn}: \eqn{\hat\Sigma_2 = V^\top K_3^+ V} (Theorem var_2,
-#'     any design);
-#'   \item \code{mrn} / \code{iptw}, Bernoulli: Loewner max of the within- and
-#'     overlap-kernel covariances (Theorem var_1);
-#'   \item \code{mrn} / \code{iptw}, complete: the Bernoulli value minus the
-#'     bias-correction matrix \eqn{\hat M} (Section 6.3).
+#'   \item \code{crn}: \eqn{\hat\Sigma_2 = V^\top K_3^+ V} (Theorem 5.9);
+#'   \item \code{mrn} / \code{iptw}, Bernoulli:
+#'     \eqn{\hat\Sigma_1 = \hat\Sigma^{K_1} \vee \hat\Sigma^{K_2}}, the Loewner
+#'     max of the within- and overlap-kernel covariances (Theorem 5.4);
+#'   \item \code{mrn} / \code{iptw}, complete:
+#'     \eqn{\hat\Sigma_3 = \hat\Sigma_1 - \hat M} (Theorem 5.11(ii)).
 #' }
 #'
 #' @param V n_unit x d contribution matrix.
@@ -196,7 +196,8 @@
 .assemble_Sigma <- function(V, A, C, W_C, method, design) {
   if (method == "crn") {
     K3 <- .kernel_K3_plus(A)
-    return(list(Sigma = .sigma_from_kernel(V, K3), variance_type = "var_2 (K3+)"))
+    return(list(Sigma = .sigma_from_kernel(V, K3),
+                variance_type = "Sigma2: K3+ kernel (Theorem 5.9)"))
   }
 
   ker <- .cluster_kernels(A, C)
@@ -206,9 +207,11 @@
 
   if (design == "complete") {
     M <- .bias_correction_matrix(A, C, W_C, V)
-    return(list(Sigma = Sigma1 - M, variance_type = "var_1 bias-corrected (complete rand.)"))
+    return(list(Sigma = Sigma1 - M,
+                variance_type = "Sigma3: bias-corrected, complete randomization (Theorem 5.11(ii))"))
   }
-  list(Sigma = Sigma1, variance_type = "var_1 (Loewner-max, Bernoulli)")
+  list(Sigma = Sigma1,
+       variance_type = "Sigma1: Loewner-max, Bernoulli randomization (Theorem 5.4)")
 }
 
 #' Estimation engine: weights to tidy output

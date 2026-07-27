@@ -11,7 +11,7 @@ A named list; each entry has the potential-outcome keys \code{plus}
   and \code{minus} and a display \code{label}.
 }
 \description{
-Causal-effect contrasts over the potential-outcome keys (Section 4-5):
+Causal-effect contrasts over the potential-outcome keys (Section 3):
 \itemize{
   \item overall \eqn{CE^O = \bar Y(\phi_1) - \bar Y(\phi_0)}
   \item direct \eqn{CE^D(\phi_c) = \bar Y(1, \phi_c) - \bar Y(0, \phi_c)}

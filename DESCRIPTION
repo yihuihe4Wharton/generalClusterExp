@@ -5,16 +5,19 @@ Version: 0.1.0
 Authors@R: person("Yihui", "He", email = "yihuihe@upenn.edu", role = c("aut", "cre"))
 Description: Implements the MRN, IPTW, and CRN linear-weighted Hajek estimators
     for cluster-randomized experiments with cross-cluster network interference,
-    together with conservative HAC variance estimators. Each top-level function
-    returns the overall, direct, indirect and total causal effects, all
-    well-defined marginal and non-marginal population average potential
-    outcomes, and variance estimates for every quantity. The estimands follow
-    Section 4-5 of the companion manuscript; the variance estimators follow
-    Section 6 (Theorem var_1 Loewner-max kernel under cluster-level Bernoulli
-    randomization, the bias-corrected estimator under complete randomization,
-    and Theorem var_2 / K3+ kernel for the cluster-agnostic CRN estimator).
+    together with conservative HAC variance estimators, following He and
+    Tchetgen Tchetgen (2026) <doi:10.48550/arXiv.2607.04644>. Each top-level
+    function returns the overall, direct, indirect and total causal effects,
+    all well-defined marginal and non-marginal population average potential
+    outcomes, and variance estimates for every quantity. The estimands and
+    identification weights follow Section 3 of the paper (Theorems 3.6 and 3.7
+    and Proposition 3.9); the estimators follow Section 4; the variance
+    estimators follow Section 5 (Theorem 5.4 for the Loewner-max kernel under
+    cluster-level Bernoulli randomization, Theorem 5.9 for the cluster-agnostic
+    K3+ kernel, and Theorem 5.11 for the bias-corrected estimator under
+    complete randomization).
 License: MIT + file LICENSE
-URL: https://yihuihe4wharton.github.io/generalClusterExp/, https://github.com/yihuihe4Wharton/generalClusterExp
+URL: https://yihuihe4wharton.github.io/generalClusterExp/, https://github.com/yihuihe4Wharton/generalClusterExp, https://arxiv.org/abs/2607.04644
 BugReports: https://github.com/yihuihe4Wharton/generalClusterExp/issues
 Encoding: UTF-8
 Imports:

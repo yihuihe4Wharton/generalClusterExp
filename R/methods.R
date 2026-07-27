@@ -5,7 +5,7 @@
 # indirect and total causal effects; all well-defined marginal and non-marginal
 # population average potential outcomes; and a variance estimate for every
 # quantity). They differ only in (a) the identification weights and (b) the HAC
-# variance rule, matching the MRN / IPTW / CRN estimators of Section 7.
+# variance rule, matching the MRN / IPTW / CRN estimators of Section 4.
 ##############################################################
 
 #' Infer the cluster-level assignment design
@@ -39,12 +39,13 @@
 #' MRN estimator (marginal Radon--Nikodym weights)
 #'
 #' Linear-weighted Hajek estimator using the marginal Radon--Nikodym
-#' identification weights (Proposition examples_of_weights (i)). Returns all
+#' identification weights (Theorem 3.6, Proposition 3.9(i)). Returns all
 #' well-defined causal effects and population average potential outcomes with
 #' variance estimates. The variance estimator is the Loewner-max HAC estimator
-#' \eqn{\hat\Sigma_1} (Theorem var_1) under cluster-level Bernoulli
-#' randomization, and the bias-corrected estimator \eqn{\hat\Sigma_1^{bc}}
-#' (Section 6.3) under complete randomization.
+#' \eqn{\hat\Sigma_1} (Theorem 5.4) under cluster-level Bernoulli
+#' randomization, and the bias-corrected estimator
+#' \eqn{\hat\Sigma_3 = \hat\Sigma_1 - \hat M} (Theorem 5.11(ii)) under
+#' cluster-level complete randomization.
 #'
 #' @param A n_unit x n_unit adjacency matrix of the interference network
 #'   (with self-loops, as used throughout the project).
@@ -85,7 +86,7 @@
 #'                  W_Y * as.vector(A %*% (1 * W_Y)) + rnorm(n))
 #'
 #' ## MRN estimator under cluster-level Bernoulli randomization:
-#' ## variance is the Loewner-max HAC estimator (Theorem var_1).
+#' ## variance is the Loewner-max HAC estimator Sigma1 (Theorem 5.4).
 #' fit <- mrn(A, C, Y, W_C, W_Y,
 #'            dist1 = "binom", params1 = list(prob = 0.5),
 #'            dist0 = "binom", params0 = list(prob = 0.2),
@@ -96,7 +97,7 @@
 #'
 #' ## Cluster-level complete randomization (exactly 7 of 10 clusters
 #' ## treated, distC = "hypergeom"): the bias-corrected variance
-#' ## estimator of Section 6.3 is used automatically.
+#' ## estimator Sigma3 of Theorem 5.11(ii) is used automatically.
 #' W_C2 <- as.integer(seq_len(K) %in% sample.int(K, 7))
 #' W_Y2 <- rbinom(n, 1, ifelse(W_C2[C] == 1, 0.5, 0.2))
 #' Y2 <- as.vector(-1 + A %*% (2 * W_Y2) +
@@ -129,9 +130,10 @@ mrn <- function(A, C, Y, W_C, W_Y,
 #' IPTW estimator (inverse-probability-of-treatment weights)
 #'
 #' Linear-weighted Hajek estimator using the cluster-level IPTW identification
-#' weights of Leung (2025) (Proposition examples_of_weights (iv)). Same outputs
-#' and variance rule as \code{\link{mrn}} (Theorem var_1 under Bernoulli
-#' randomization; bias-corrected estimator under complete randomization).
+#' weights of Leung (2025) (Proposition 3.9(iv)). Same outputs and variance
+#' rule as \code{\link{mrn}}: \eqn{\hat\Sigma_1} (Theorem 5.4) under Bernoulli
+#' randomization and the bias-corrected \eqn{\hat\Sigma_3} (Theorem 5.11(ii))
+#' under complete randomization.
 #'
 #' @inheritParams mrn
 #' @return See \code{\link{mrn}}.
@@ -177,11 +179,14 @@ iptw <- function(A, C, Y, W_C, W_Y,
 #' CRN estimator (complete Radon--Nikodym weights)
 #'
 #' Cluster-agnostic linear-weighted Hajek estimator using the complete (joint)
-#' Radon--Nikodym identification weights (Proposition examples_of_weights (ii)).
+#' Radon--Nikodym identification weights (Theorem 3.7, Proposition 3.9(ii)).
 #' Same outputs as \code{\link{mrn}}. The variance estimator is the
-#' cluster-agnostic HAC estimator \eqn{\hat\Sigma_2} based on the PSD kernel
-#' \eqn{K_3^+} (Theorem var_2), used under both Bernoulli and complete
-#' randomization.
+#' cluster-agnostic HAC estimator \eqn{\hat\Sigma_2} built from the PSD part
+#' \eqn{K_3^+} of the interference kernel, and is used for every value of
+#' \code{design}. Its conservativeness is established in Theorem 5.9 under
+#' independent Bernoulli randomization; the companion manuscript does not
+#' cover \eqn{\hat\Sigma_2} under complete randomization, so treat the
+#' variance as heuristic in that case.
 #'
 #' @inheritParams mrn
 #' @return See \code{\link{mrn}}.
@@ -201,7 +206,7 @@ iptw <- function(A, C, Y, W_C, W_Y,
 #'                  W_Y * as.vector(A %*% (1 * W_Y)) + rnorm(n))
 #'
 #' ## CRN is cluster-agnostic: its variance uses the PSD-projected
-#' ## interference kernel K3+ (Theorem var_2) under any design.
+#' ## interference kernel K3+ (Sigma2, Theorem 5.9).
 #' fit <- crn(A, C, Y, W_C, W_Y,
 #'            params1 = list(prob = 0.5), params0 = list(prob = 0.2),
 #'            distC = "binom", paramsC = list(prob = 0.7))

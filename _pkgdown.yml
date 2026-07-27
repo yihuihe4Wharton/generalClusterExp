@@ -3,6 +3,16 @@ url: https://yihuihe4wharton.github.io/generalClusterExp/
 template:
   bootstrap: 5
 
+navbar:
+  structure:
+    right: [paper, github, lightswitch]
+  components:
+    paper:
+      icon: fa-file-lines
+      text: Paper
+      href: https://arxiv.org/abs/2607.04644
+      aria-label: arXiv paper
+
 reference:
 - title: Estimators
   desc: >

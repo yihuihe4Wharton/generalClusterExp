@@ -19,7 +19,8 @@ An n_unit x n_unit PSD kernel matrix.
 PSD part of the unit-level interference kernel
 \deqn{(K_3)_{ij,i'j'} = 1\{ N_{ij} \cap N_{i'j'} \neq \emptyset \},}
 i.e. two units are dependent when they share at least one interference
-neighbour. Used by the cluster-agnostic CRN estimator (Theorem var_2).
+neighbour. The PSD part \eqn{K_3^+} is the kernel of the cluster-agnostic
+variance estimator \eqn{\hat\Sigma_2} (Theorem 5.9).
 }
 \examples{
 ## chain network: each unit interferes with itself and adjacent units

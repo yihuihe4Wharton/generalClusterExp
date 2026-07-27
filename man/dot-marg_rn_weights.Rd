@@ -40,8 +40,8 @@ with nonzero weight are processed.}
 A list with numeric vectors \code{weights1} and \code{weights0}.
 }
 \description{
-Per-unit marginal Radon--Nikodym weights \eqn{\alpha_{ij}(\phi_c)} (Theorem
-all_weights / Prop. weights (i)) for the two counterfactual regimes. The
+Per-unit marginal Radon--Nikodym weights \eqn{\alpha_{ij}(\phi_c)}
+(Theorem 3.6, Proposition 3.9(i)) for the two counterfactual regimes. The
 weights marginalise over the within-cluster assignment of each neighbouring
 cluster, so a unit contributes whenever its cluster neighbourhood has
 positive probability under both regimes.

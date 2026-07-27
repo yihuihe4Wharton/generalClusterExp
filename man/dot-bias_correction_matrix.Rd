@@ -25,7 +25,8 @@ A d x d PSD correction matrix.
 }
 \description{
 Bias-correction matrix \eqn{\hat M} under cluster-level (stratified)
-complete randomization (Section 6.3, bias-corrected estimator):
+complete randomization (Section 5.2; the bias-corrected estimator
+\eqn{\hat\Sigma_3 = \hat\Sigma_1 - \hat M} of Theorem 5.11(ii)):
 \deqn{\hat M = \sum_{k : p_k \in (p_{overlap}, 1 - p_{overlap})}
       \hat s_k \hat s_k^\top / (|I_k| p_k (1 - p_k)),}
 \deqn{\hat s_k = \sum_{(i,j)} (T_{ij,k} - m_{ij,k} p_k) V_{ij},}

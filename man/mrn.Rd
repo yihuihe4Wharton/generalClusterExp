@@ -51,12 +51,13 @@ A list with \code{causal_effects}, \code{potential_outcomes} (data
 }
 \description{
 Linear-weighted Hajek estimator using the marginal Radon--Nikodym
-identification weights (Proposition examples_of_weights (i)). Returns all
+identification weights (Theorem 3.6, Proposition 3.9(i)). Returns all
 well-defined causal effects and population average potential outcomes with
 variance estimates. The variance estimator is the Loewner-max HAC estimator
-\eqn{\hat\Sigma_1} (Theorem var_1) under cluster-level Bernoulli
-randomization, and the bias-corrected estimator \eqn{\hat\Sigma_1^{bc}}
-(Section 6.3) under complete randomization.
+\eqn{\hat\Sigma_1} (Theorem 5.4) under cluster-level Bernoulli
+randomization, and the bias-corrected estimator
+\eqn{\hat\Sigma_3 = \hat\Sigma_1 - \hat M} (Theorem 5.11(ii)) under
+cluster-level complete randomization.
 }
 \examples{
 ## Small geometric cluster network (a scaled-down version of the
@@ -81,7 +82,7 @@ Y <- as.vector(-1 + A \%*\% (2 * W_Y) +
                  W_Y * as.vector(A \%*\% (1 * W_Y)) + rnorm(n))
 
 ## MRN estimator under cluster-level Bernoulli randomization:
-## variance is the Loewner-max HAC estimator (Theorem var_1).
+## variance is the Loewner-max HAC estimator Sigma1 (Theorem 5.4).
 fit <- mrn(A, C, Y, W_C, W_Y,
            dist1 = "binom", params1 = list(prob = 0.5),
            dist0 = "binom", params0 = list(prob = 0.2),
@@ -92,7 +93,7 @@ fit$potential_outcomes
 
 ## Cluster-level complete randomization (exactly 7 of 10 clusters
 ## treated, distC = "hypergeom"): the bias-corrected variance
-## estimator of Section 6.3 is used automatically.
+## estimator Sigma3 of Theorem 5.11(ii) is used automatically.
 W_C2 <- as.integer(seq_len(K) \%in\% sample.int(K, 7))
 W_Y2 <- rbinom(n, 1, ifelse(W_C2[C] == 1, 0.5, 0.2))
 Y2 <- as.vector(-1 + A \%*\% (2 * W_Y2) +

@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="General Cluster Experiment Estimators under Network Interference">
-<meta name="description" content="Implements the MRN, IPTW, and CRN linear-weighted Hajek estimators for cluster-randomized experiments with cross-cluster network interference, together with conservative HAC variance estimators. Each top-level function returns the overall, direct, indirect and total causal effects, all well-defined marginal and non-marginal population average potential outcomes, and variance estimates for every quantity. The estimands follow Section 4-5 of the companion manuscript; the variance estimators follow Section 6 (Theorem var_1 Loewner-max kernel under cluster-level Bernoulli randomization, the bias-corrected estimator under complete randomization, and Theorem var_2 / K3+ kernel for the cluster-agnostic CRN estimator).">
-<meta property="og:description" content="Implements the MRN, IPTW, and CRN linear-weighted Hajek estimators for cluster-randomized experiments with cross-cluster network interference, together with conservative HAC variance estimators. Each top-level function returns the overall, direct, indirect and total causal effects, all well-defined marginal and non-marginal population average potential outcomes, and variance estimates for every quantity. The estimands follow Section 4-5 of the companion manuscript; the variance estimators follow Section 6 (Theorem var_1 Loewner-max kernel under cluster-level Bernoulli randomization, the bias-corrected estimator under complete randomization, and Theorem var_2 / K3+ kernel for the cluster-agnostic CRN estimator).">
+<meta name="description" content="Implements the MRN, IPTW, and CRN linear-weighted Hajek estimators for cluster-randomized experiments with cross-cluster network interference, together with conservative HAC variance estimators, following He and Tchetgen Tchetgen (2026) &lt;doi:10.48550/arXiv.2607.04644&gt;. Each top-level function returns the overall, direct, indirect and total causal effects, all well-defined marginal and non-marginal population average potential outcomes, and variance estimates for every quantity. The estimands and identification weights follow Section 3 of the paper (Theorems 3.6 and 3.7 and Proposition 3.9); the estimators follow Section 4; the variance estimators follow Section 5 (Theorem 5.4 for the Loewner-max kernel under cluster-level Bernoulli randomization, Theorem 5.9 for the cluster-agnostic K3+ kernel, and Theorem 5.11 for the bias-corrected estimator under complete randomization).">
+<meta property="og:description" content="Implements the MRN, IPTW, and CRN linear-weighted Hajek estimators for cluster-randomized experiments with cross-cluster network interference, together with conservative HAC variance estimators, following He and Tchetgen Tchetgen (2026) &lt;doi:10.48550/arXiv.2607.04644&gt;. Each top-level function returns the overall, direct, indirect and total causal effects, all well-defined marginal and non-marginal population average potential outcomes, and variance estimates for every quantity. The estimands and identification weights follow Section 3 of the paper (Theorems 3.6 and 3.7 and Proposition 3.9); the estimators follow Section 4; the variance estimators follow Section 5 (Theorem 5.4 for the Loewner-max kernel under cluster-level Bernoulli randomization, Theorem 5.9 for the cluster-agnostic K3+ kernel, and Theorem 5.11 for the bias-corrected estimator under complete randomization).">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -34,9 +34,7 @@
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
       </ul>
 <ul class="navbar-nav">
-<li class="nav-item"><form class="form-inline" role="search">
- <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
-</form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://arxiv.org/abs/2607.04644" aria-label="arXiv paper"><span class="fa fa-file-lines"></span> Paper</a></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/yihuihe4Wharton/generalClusterExp/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
@@ -48,7 +46,11 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="generalclusterexp">generalClusterExp<a class="anchor" aria-label="anchor" href="#generalclusterexp"></a>
 </h1></div>
-<p>Estimators for cluster-randomized experiments with cross-cluster network interference. The package wraps the methods developed in the companion manuscript into three top-level functions:</p>
+<p>Estimators for cluster-randomized experiments with cross-cluster network interference. The package implements the methods of</p>
+<blockquote>
+<p>Yihui He and Eric J. Tchetgen Tchetgen (2026). <em>A General Exposure-Mapping-Agnostic Framework for Causal Inference under Interference.</em> <a href="https://arxiv.org/abs/2607.04644" class="external-link">arXiv:2607.04644</a></p>
+</blockquote>
+<p>as three top-level functions:</p>
 <table class="table">
 <colgroup>
 <col width="20%">
@@ -66,23 +68,23 @@
 <tr>
 <td><code><a href="reference/mrn.html">mrn()</a></code></td>
 <td>marginal Radon–Nikodym</td>
-<td>Prop. examples_of_weights (i)</td>
+<td>Thm 3.6, Prop. 3.9(i)</td>
 <td>
-<code>var_1</code> Löwner-max (Bernoulli) / bias-corrected (complete rand.)</td>
+<code>Sigma1</code> Löwner-max (Thm 5.4) / <code>Sigma3</code> bias-corrected (Thm 5.11(ii))</td>
 </tr>
 <tr>
 <td><code><a href="reference/iptw.html">iptw()</a></code></td>
 <td>cluster-level IPTW</td>
-<td>Prop. examples_of_weights (iv)</td>
+<td>Prop. 3.9(iv)</td>
 <td>
-<code>var_1</code> Löwner-max (Bernoulli) / bias-corrected (complete rand.)</td>
+<code>Sigma1</code> Löwner-max (Thm 5.4) / <code>Sigma3</code> bias-corrected (Thm 5.11(ii))</td>
 </tr>
 <tr>
 <td><code><a href="reference/crn.html">crn()</a></code></td>
 <td>complete Radon–Nikodym</td>
-<td>Prop. examples_of_weights (ii)</td>
+<td>Thm 3.7, Prop. 3.9(ii)</td>
 <td>
-<code>var_2</code> (<code>K3+</code> kernel), any design</td>
+<code>Sigma2</code> (<code>K3+</code> kernel, Thm 5.9)</td>
 </tr>
 </tbody>
 </table>
@@ -153,12 +155,24 @@
 <p>See <code><a href="reference/mrn.html">?mrn</a></code>, <code><a href="reference/iptw.html">?iptw</a></code> and <code><a href="reference/crn.html">?crn</a></code> for full documentation and further examples.</p>
 </div>
 <div class="section level2">
-<h2 id="estimand-and-variance-references">Estimand and variance references<a class="anchor" aria-label="anchor" href="#estimand-and-variance-references"></a>
+<h2 id="reference">Reference<a class="anchor" aria-label="anchor" href="#reference"></a>
 </h2>
+<p>All section, theorem and proposition numbers below refer to <a href="https://arxiv.org/abs/2607.04644" class="external-link">arXiv:2607.04644</a>.</p>
 <ul>
-<li>Estimands (direct / indirect / total / overall effects, marginal and non-marginal population average potential outcomes): Sections 4–5 of the companion manuscript.</li>
-<li>Variance estimators: Section 6 — Theorem <code>var_1</code> (Löwner-max of the within- and cross-cluster HAC kernels), the bias-corrected estimator under complete randomization (Section 6.3), and Theorem <code>var_2</code> (<code>K3+</code> kernel) for the cluster-agnostic CRN estimator.</li>
+<li>
+<strong>Estimands</strong> — direct, indirect, total and overall causal effects, and the marginal / non-marginal population average potential outcomes: Section 3 (“Setup and identification”).</li>
+<li>
+<strong>Identification weights</strong> — Theorem 3.6 characterizes all unbiased weights, Theorem 3.7 the cluster-agnostic ones, and Proposition 3.9 lists the examples implemented here: (i) marginal Radon–Nikodym → <code><a href="reference/mrn.html">mrn()</a></code>,
+<ol start="2" style="list-style-type: lower-roman">
+<li>complete Radon–Nikodym → <code><a href="reference/crn.html">crn()</a></code>, (iv) cluster-level IPTW → <code><a href="reference/iptw.html">iptw()</a></code>.</li>
+</ol>
+</li>
+<li>
+<strong>Estimators</strong> — the Hájek linear-weighted estimators and the weight matrices <code>B</code>, <code>B_marg</code>: Section 4.</li>
+<li>
+<strong>Variance estimators</strong> — Section 5. Theorem 5.4 gives <code>Sigma1</code>, the Löwner maximum of the within-cluster (<code>K1</code>) and cross-cluster (<code>K2</code>) HAC kernels under independent Bernoulli randomization. Theorem 5.9 gives <code>Sigma2</code>, the cluster-agnostic estimator built from <code>K3+</code>. Theorem 5.11(ii) gives <code>Sigma3 = Sigma1 - M</code>, the bias-corrected estimator under cluster-level complete randomization.</li>
 </ul>
+<p><code><a href="reference/crn.html">crn()</a></code> uses <code>Sigma2</code> for every design. Theorem 5.9 establishes its conservativeness under independent Bernoulli randomization; the paper does not extend <code>Sigma2</code> to complete randomization, so under that design the reported <code><a href="reference/crn.html">crn()</a></code> variance should be read as heuristic.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

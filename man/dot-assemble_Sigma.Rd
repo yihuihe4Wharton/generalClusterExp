@@ -27,12 +27,12 @@ A list with the d x d matrix \code{Sigma} and a describing string
 Assembles the d x d HAC covariance for the supplied contribution matrix
 \code{V}, following the variance rule for the (method, design) pair:
 \itemize{
-  \item \code{crn}: \eqn{\hat\Sigma_2 = V^\top K_3^+ V} (Theorem var_2,
-    any design);
-  \item \code{mrn} / \code{iptw}, Bernoulli: Loewner max of the within- and
-    overlap-kernel covariances (Theorem var_1);
-  \item \code{mrn} / \code{iptw}, complete: the Bernoulli value minus the
-    bias-correction matrix \eqn{\hat M} (Section 6.3).
+  \item \code{crn}: \eqn{\hat\Sigma_2 = V^\top K_3^+ V} (Theorem 5.9);
+  \item \code{mrn} / \code{iptw}, Bernoulli:
+    \eqn{\hat\Sigma_1 = \hat\Sigma^{K_1} \vee \hat\Sigma^{K_2}}, the Loewner
+    max of the within- and overlap-kernel covariances (Theorem 5.4);
+  \item \code{mrn} / \code{iptw}, complete:
+    \eqn{\hat\Sigma_3 = \hat\Sigma_1 - \hat M} (Theorem 5.11(ii)).
 }
 }
 \examples{

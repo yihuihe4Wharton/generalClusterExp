@@ -24,7 +24,7 @@ Builds the per-unit identification weight column b for one estimand:
 \itemize{
   \item marginal: \eqn{b_i = wts_i}
   \item non-marginal: \eqn{b_i = wts_i \cdot 1(W_i = w) / P_\phi(W_i = w)}
-    (Theorem all_weights (b))
+    (Theorem 3.6(b))
 }
 }
 \examples{

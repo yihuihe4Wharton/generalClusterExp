@@ -1,5 +1,5 @@
 ##############################################################
-# HAC variance kernels and matrix operations (Section 6 of the companion
+# HAC variance kernels and matrix operations (Section 5 of the companion
 # manuscript).
 #
 # A kernel K is an n_unit x n_unit symmetric 0/1 (or PSD-projected) matrix that
@@ -68,7 +68,8 @@
 #' PSD part of the unit-level interference kernel
 #' \deqn{(K_3)_{ij,i'j'} = 1\{ N_{ij} \cap N_{i'j'} \neq \emptyset \},}
 #' i.e. two units are dependent when they share at least one interference
-#' neighbour. Used by the cluster-agnostic CRN estimator (Theorem var_2).
+#' neighbour. The PSD part \eqn{K_3^+} is the kernel of the cluster-agnostic
+#' variance estimator \eqn{\hat\Sigma_2} (Theorem 5.9).
 #'
 #' @param A n_unit x n_unit adjacency matrix (with self-loops).
 #' @param psd_fun PSD projection: \code{"shift"} (default, sparse) or
@@ -96,7 +97,8 @@
 
 #' Cluster kernels for the general (MRN / IPTW) variance estimator
 #'
-#' Builds the two cluster kernels of Theorem var_1:
+#' Builds the two cluster kernels \eqn{K_1} and \eqn{K_2} of Section 5.1
+#' (Theorem 5.4):
 #' \itemize{
 #'   \item \code{K1} (within): \eqn{1\{i = i'\}} at the cluster level, i.e. two
 #'     units are dependent when they belong to the same cluster (PSD);
@@ -186,7 +188,8 @@
 #' Bias-correction matrix under complete randomization
 #'
 #' Bias-correction matrix \eqn{\hat M} under cluster-level (stratified)
-#' complete randomization (Section 6.3, bias-corrected estimator):
+#' complete randomization (Section 5.2; the bias-corrected estimator
+#' \eqn{\hat\Sigma_3 = \hat\Sigma_1 - \hat M} of Theorem 5.11(ii)):
 #' \deqn{\hat M = \sum_{k : p_k \in (p_{overlap}, 1 - p_{overlap})}
 #'       \hat s_k \hat s_k^\top / (|I_k| p_k (1 - p_k)),}
 #' \deqn{\hat s_k = \sum_{(i,j)} (T_{ij,k} - m_{ij,k} p_k) V_{ij},}

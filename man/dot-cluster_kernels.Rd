@@ -16,7 +16,8 @@ A list with sparse 0/1 kernels \code{K1} (within) and \code{K2}
   (overlap).
 }
 \description{
-Builds the two cluster kernels of Theorem var_1:
+Builds the two cluster kernels \eqn{K_1} and \eqn{K_2} of Section 5.1
+(Theorem 5.4):
 \itemize{
   \item \code{K1} (within): \eqn{1\{i = i'\}} at the cluster level, i.e. two
     units are dependent when they belong to the same cluster (PSD);

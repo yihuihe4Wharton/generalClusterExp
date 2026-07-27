@@ -1,14 +1,19 @@
 # generalClusterExp
 
 Estimators for cluster-randomized experiments with cross-cluster network
-interference. The package wraps the methods developed in the companion
-manuscript into three top-level functions:
+interference. The package implements the methods of
+
+> Yihui He and Eric J. Tchetgen Tchetgen (2026).
+> *A General Exposure-Mapping-Agnostic Framework for Causal Inference under
+> Interference.* [arXiv:2607.04644](https://arxiv.org/abs/2607.04644)
+
+as three top-level functions:
 
 | function | weights | reference | variance estimator |
 |----------|---------|-----------|--------------------|
-| `mrn()`  | marginal Radon–Nikodym | Prop. examples_of_weights (i)  | `var_1` Löwner-max (Bernoulli) / bias-corrected (complete rand.) |
-| `iptw()` | cluster-level IPTW     | Prop. examples_of_weights (iv) | `var_1` Löwner-max (Bernoulli) / bias-corrected (complete rand.) |
-| `crn()`  | complete Radon–Nikodym | Prop. examples_of_weights (ii) | `var_2` (`K3+` kernel), any design |
+| `mrn()`  | marginal Radon–Nikodym | Thm 3.6, Prop. 3.9(i)  | `Sigma1` Löwner-max (Thm 5.4) / `Sigma3` bias-corrected (Thm 5.11(ii)) |
+| `iptw()` | cluster-level IPTW     | Prop. 3.9(iv)          | `Sigma1` Löwner-max (Thm 5.4) / `Sigma3` bias-corrected (Thm 5.11(ii)) |
+| `crn()`  | complete Radon–Nikodym | Thm 3.7, Prop. 3.9(ii) | `Sigma2` (`K3+` kernel, Thm 5.9) |
 
 ## Installation
 
@@ -75,12 +80,28 @@ fit_bc$variance_type
 
 See `?mrn`, `?iptw` and `?crn` for full documentation and further examples.
 
-## Estimand and variance references
+## Reference
 
-* Estimands (direct / indirect / total / overall effects, marginal and
-  non-marginal population average potential outcomes): Sections 4–5 of the
-  companion manuscript.
-* Variance estimators: Section 6 — Theorem `var_1` (Löwner-max of the within-
-  and cross-cluster HAC kernels), the bias-corrected estimator under complete
-  randomization (Section 6.3), and Theorem `var_2` (`K3+` kernel) for the
-  cluster-agnostic CRN estimator.
+All section, theorem and proposition numbers below refer to
+[arXiv:2607.04644](https://arxiv.org/abs/2607.04644).
+
+* **Estimands** — direct, indirect, total and overall causal effects, and the
+  marginal / non-marginal population average potential outcomes: Section 3
+  ("Setup and identification").
+* **Identification weights** — Theorem 3.6 characterizes all unbiased weights,
+  Theorem 3.7 the cluster-agnostic ones, and Proposition 3.9 lists the
+  examples implemented here: (i) marginal Radon–Nikodym → `mrn()`,
+  (ii) complete Radon–Nikodym → `crn()`, (iv) cluster-level IPTW → `iptw()`.
+* **Estimators** — the Hájek linear-weighted estimators and the weight
+  matrices `B`, `B_marg`: Section 4.
+* **Variance estimators** — Section 5. Theorem 5.4 gives `Sigma1`, the Löwner
+  maximum of the within-cluster (`K1`) and cross-cluster (`K2`) HAC kernels
+  under independent Bernoulli randomization. Theorem 5.9 gives `Sigma2`, the
+  cluster-agnostic estimator built from `K3+`. Theorem 5.11(ii) gives
+  `Sigma3 = Sigma1 - M`, the bias-corrected estimator under cluster-level
+  complete randomization.
+
+`crn()` uses `Sigma2` for every design. Theorem 5.9 establishes its
+conservativeness under independent Bernoulli randomization; the paper does not
+extend `Sigma2` to complete randomization, so under that design the reported
+`crn()` variance should be read as heuristic.
