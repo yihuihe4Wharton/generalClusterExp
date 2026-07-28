@@ -172,7 +172,7 @@
 <li>
 <strong>Variance estimators</strong> — Section 5. Theorem 5.4 gives <code>Sigma1</code>, the Löwner maximum of the within-cluster (<code>K1</code>) and cross-cluster (<code>K2</code>) HAC kernels under independent Bernoulli randomization. Theorem 5.9 gives <code>Sigma2</code>, the cluster-agnostic estimator built from <code>K3+</code>. Theorem 5.11(ii) gives <code>Sigma3 = Sigma1 - M</code>, the bias-corrected estimator under cluster-level complete randomization.</li>
 </ul>
-<p><code><a href="reference/crn.html">crn()</a></code> uses <code>Sigma2</code> for every design. Theorem 5.9 establishes its conservativeness under independent Bernoulli randomization; the paper does not extend <code>Sigma2</code> to complete randomization, so under that design the reported <code><a href="reference/crn.html">crn()</a></code> variance should be read as heuristic.</p>
+<p>Theorem 5.9 establishes the conservativeness of <code>Sigma2</code> under independent Bernoulli randomization only. Under cluster-level complete randomization (<code>distC = "hypergeom"</code>, or <code>design = "complete"</code>) <code><a href="reference/crn.html">crn()</a></code> still returns <code>Sigma2</code>, but issues a warning and appends <code>"; heuristic under complete randomization"</code> to <code>variance_type</code>. Prefer <code><a href="reference/mrn.html">mrn()</a></code> or <code><a href="reference/iptw.html">iptw()</a></code> under that design — their bias-corrected <code>Sigma3</code> (Theorem 5.11(ii)) is justified there.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -204,6 +204,7 @@
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Yihui He <br><small class="roles"> Author, maintainer </small>   </li>
+<li>Eric J. Tchetgen Tchetgen <br><small class="roles"> Author </small>   </li>
 </ul>
 </div>
 
@@ -214,7 +215,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Yihui He.</p>
+  <p>Developed by Yihui He, Eric J. Tchetgen Tchetgen.</p>
 </div>
 
 <div class="pkgdown-footer-right">

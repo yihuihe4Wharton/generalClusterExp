@@ -182,11 +182,20 @@ iptw <- function(A, C, Y, W_C, W_Y,
 #' Radon--Nikodym identification weights (Theorem 3.7, Proposition 3.9(ii)).
 #' Same outputs as \code{\link{mrn}}. The variance estimator is the
 #' cluster-agnostic HAC estimator \eqn{\hat\Sigma_2} built from the PSD part
-#' \eqn{K_3^+} of the interference kernel, and is used for every value of
-#' \code{design}. Its conservativeness is established in Theorem 5.9 under
-#' independent Bernoulli randomization; the companion manuscript does not
-#' cover \eqn{\hat\Sigma_2} under complete randomization, so treat the
-#' variance as heuristic in that case.
+#' \eqn{K_3^+} of the interference kernel (Theorem 5.9).
+#'
+#' @section Variance under complete randomization:
+#' Theorem 5.9 establishes the conservativeness of \eqn{\hat\Sigma_2} under
+#' independent Bernoulli randomization only; the companion manuscript does not
+#' cover the cluster-agnostic estimator under cluster-level complete
+#' randomization. When \code{design} resolves to \code{"complete"} (which
+#' \code{distC = "hypergeom"} implies), \code{crn} still returns
+#' \eqn{\hat\Sigma_2} but issues a warning, and flags the output by appending
+#' \code{"; heuristic under complete randomization"} to \code{variance_type}.
+#' Treat the variances and standard errors as heuristic in that case, and
+#' prefer \code{\link{mrn}} or \code{\link{iptw}}, whose bias-corrected
+#' estimator \eqn{\hat\Sigma_3} (Theorem 5.11(ii)) is justified under that
+#' design.
 #'
 #' @inheritParams mrn
 #' @return See \code{\link{mrn}}.
@@ -212,6 +221,14 @@ iptw <- function(A, C, Y, W_C, W_Y,
 #'            distC = "binom", paramsC = list(prob = 0.7))
 #' fit$variance_type
 #' fit$causal_effects
+#'
+#' ## Under complete randomization crn() still returns Sigma2, but warns
+#' ## that the manuscript does not justify it for that design.
+#' W_C2 <- as.integer(seq_len(K) %in% sample.int(K, 7))
+#' fit_c <- crn(A, C, Y, W_C2, W_Y,
+#'              params1 = list(prob = 0.5), params0 = list(prob = 0.2),
+#'              distC = "hypergeom", paramsC = list(m = 7))
+#' fit_c$variance_type
 #' @export
 crn <- function(A, C, Y, W_C, W_Y,
                 dist1 = "binom", params1 = list(prob = 0.5),
@@ -220,6 +237,15 @@ crn <- function(A, C, Y, W_C, W_Y,
                 unit_weights = NULL, design = NULL) {
   if (!inherits(A, "sparseMatrix")) A <- Matrix::Matrix(A, sparse = TRUE)
   des <- .infer_design(distC, design)
+  if (des == "complete") {
+    warning("crn() reports the cluster-agnostic variance estimator Sigma2 ",
+            "(K3+ kernel), whose conservativeness is established only under ",
+            "independent Bernoulli randomization (Theorem 5.9). Under ",
+            "cluster-level complete randomization the returned variances and ",
+            "standard errors are heuristic. Consider mrn() or iptw(), which ",
+            "use the bias-corrected estimator Sigma3 (Theorem 5.11(ii)).",
+            call. = FALSE)
+  }
   w <- .complete_rn_weights(A, C, W_C, W_Y,
                             dist1 = dist1, params1 = params1,
                             dist0 = dist0, params0 = params0,

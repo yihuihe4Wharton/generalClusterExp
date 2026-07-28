@@ -2,7 +2,9 @@ Package: generalClusterExp
 Type: Package
 Title: General Cluster Experiment Estimators under Network Interference
 Version: 0.1.0
-Authors@R: person("Yihui", "He", email = "yihuihe@upenn.edu", role = c("aut", "cre"))
+Authors@R: c(
+    person("Yihui", "He", email = "yihuihe@upenn.edu", role = c("aut", "cre")),
+    person("Eric J.", "Tchetgen Tchetgen", role = "aut"))
 Description: Implements the MRN, IPTW, and CRN linear-weighted Hajek estimators
     for cluster-randomized experiments with cross-cluster network interference,
     together with conservative HAC variance estimators, following He and

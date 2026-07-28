@@ -101,7 +101,10 @@ All section, theorem and proposition numbers below refer to
   `Sigma3 = Sigma1 - M`, the bias-corrected estimator under cluster-level
   complete randomization.
 
-`crn()` uses `Sigma2` for every design. Theorem 5.9 establishes its
-conservativeness under independent Bernoulli randomization; the paper does not
-extend `Sigma2` to complete randomization, so under that design the reported
-`crn()` variance should be read as heuristic.
+Theorem 5.9 establishes the conservativeness of `Sigma2` under independent
+Bernoulli randomization only. Under cluster-level complete randomization
+(`distC = "hypergeom"`, or `design = "complete"`) `crn()` still returns
+`Sigma2`, but issues a warning and appends
+`"; heuristic under complete randomization"` to `variance_type`. Prefer
+`mrn()` or `iptw()` under that design — their bias-corrected `Sigma3`
+(Theorem 5.11(ii)) is justified there.
